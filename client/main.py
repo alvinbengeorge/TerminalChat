@@ -1,20 +1,44 @@
-#sending and receiving through websocket
-# Path: client/main.py
+from textual import widgets
+from textual.app import App
 
-import asyncio
-import json
-import websockets
+class TerminalApp(App):
 
-async def main():
-    uri = "ws://localhost:8000/ws"
-    async with websockets.connect(uri) as websocket:
-        while True:
-            #send json
-            await websocket.send(json.dumps({
-                "message_json": input("Message: "),
-                "run": True
-            }))
-            print(await websocket.recv())
-        await websocket.close(code=1000, reason="Bye!")
+    BINDINGS = [
+        ("d", "toggle_dark", "Toggle dark mode"),
+        ("q", "quit", "Quit")
+    ]
+    
+    def __init__(self, sendToServer):
+        super().__init__()
+        self.sendToServer = sendToServer
+        
+    def compose(self):
+        yield widgets.Header("Hello, world!")
+        yield widgets.DataTable()
+        yield widgets.Input(placeholder="Type something...")
+        yield widgets.Button("Submit", name="submit")
+        yield widgets.Footer()
 
-asyncio.run(main())
+    def on_mount(self):
+        table = self.query_one(widgets.DataTable)
+        table.add_columns("User", "Text")
+        table.add_rows([
+            ["@mdelacruz", "Miguel de la Cruz"],
+            ["@johndoe", "John Doe"],
+            ["@janedoe", "Jane Doe"],
+        ])
+    
+    def on_button_pressed(self, event: widgets.Button.Pressed):
+        input_bar = self.query_one(widgets.Input)
+        if not input_bar.value:
+            return
+        self.addValue("@me", input_bar.value)
+        self.sendToServer(input_bar.value)
+        input_bar.value = ""
+
+    def addValue(self, user, text):
+        table = self.query_one(widgets.DataTable)
+        table.add_rows([[user, text]]
+
+app = TerminalApp()
+app.run()
