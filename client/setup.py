@@ -1,13 +1,14 @@
 import os
 import requests
+import json
 from dotenv import load_dotenv
 
 load_dotenv() if ".env" in os.listdir() else None
 
 if (
     ".env" not in os.listdir()
-    and not os.environ.get("USERNAME")
-    and not os.environ.get("PASSWORD")
+    or not os.environ.get("USERNAME")
+    or not os.environ.get("PASSWORD")
 ):
     with open(".env", "w") as f:
         f.write(
@@ -20,12 +21,15 @@ PASSWORD={}
         )
 
     result = requests.post(
-        "http://localhost:8000/users/add",
-        json={
-            "username": os.environ.get("USERNAME"),
-            "password": os.environ.get("PASSWORD"),
-        },
+        "http://localhost:8000/user/add",
+        data=json.dumps({
+            "username": str(os.environ.get("USERNAME", "")),
+            "password": str(os.environ.get("USERNAME", "")),
+        }),
     ).json()
+    if "error" in result:
+        print("Error: {}".format(result["error"]))
+        exit()
 
 
 print("Starting client...")
