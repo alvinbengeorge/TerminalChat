@@ -38,7 +38,7 @@ class TerminalApp(App):
         super().__init__()
         self.username = os.environ.get("USERNAME")
         self.password = os.environ.get("PASSWORD")
-        self.to = ""
+        self.to = sys.argv[1]
 
     def compose(self):
         yield widgets.Header("Hello, world!")
