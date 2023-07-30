@@ -5,8 +5,9 @@ from utilities.database import Database, User, Message
 from utilities.schemas import GetMessages, AddMessage
 
 router = APIRouter(prefix="/message")
-db = Database()
 load_dotenv()
+db = Database()
+
 
 
 @router.websocket("/ws")
@@ -29,8 +30,8 @@ async def get_all_messages(req: Request, get_messages: GetMessages):
     user = db.get_user(req.headers["username"])
     if (
         user
-        and user.username == req.headers["username"]
-        and user.password == req.headers["username"]
+        and user.get("username") == req.headers["username"]
+        and user.get("password") == req.headers["username"]
     ):
         return db.get_messages(get_messages.user, get_messages.to)
     if not get_messages.user != req.headers["username"]:
@@ -44,9 +45,9 @@ async def add_message(req: Request, message: AddMessage):
     if req.headers.get("username") and req.headers.get("password"):
         user = db.get_user(req.headers["username"])
         if (
-            user
-            and user.username == req.headers["username"]
-            and user.password == req.headers["username"]
+            user            
+            and user.get("username", "") == req.headers["username"]
+            and user.get("password", "") == req.headers["password"]
         ):
             db.insert_message(
                 Message(
