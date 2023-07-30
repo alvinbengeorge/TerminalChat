@@ -1,19 +1,16 @@
 from fastapi import APIRouter, Response, Request
 from utilities.database import Database, User
 from utilities.schemas import AddUser, ResetPassword
+from dotenv import load_dotenv
 
 router = APIRouter(prefix="/user")
+load_dotenv()
 db = Database()
 
 
 @router.post("/add")
 async def add_user(user: AddUser):
-    return db.insert_user(User(user.username, user.password, []))
-
-@router.post("/reset")
-async def reset_password(req: Request, reset_password: ResetPassword):
-    return db.edit_user(User(reset_password.username, reset_password.new_password, []), reset_password.new_password)
-
+    return db.insert_user(User(user.username, user.password))
 
 @router.get("/get")
 async def get_user(req: Request):
