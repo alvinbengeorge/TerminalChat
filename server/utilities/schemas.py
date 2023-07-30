@@ -21,4 +21,3 @@ class AddMessage(BaseModel):
 class GetMessages(BaseModel):
     user: str
     to: str
-
