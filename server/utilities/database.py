@@ -9,7 +9,7 @@ class Message:
         self.to = to
         self.timestamp = timestamp
 
-    def __dict__(self):
+    def toDict(self):
         return {
             "user": self.user,
             "text": self.text,
@@ -19,16 +19,14 @@ class Message:
 
 
 class User:
-    def __init__(self, username: str, friends: list):
+    def __init__(self, username: str, password: str = ""):
         self.username = username
-        self.friends = friends
         self.password = password
 
-    def __dict__(self):
+    def toDict(self):
         return {
             "username": self.username,
-            "friends": self.friends,
-            password: self.password,
+            "password": self.password,
         }
 
 
@@ -41,15 +39,13 @@ class Database:
         self.users = self.DATABASE.get_collection("users")
 
     def insert_message(self, message: Message):
-        return self.messages.insert_one(dict(message))
+        return self.messages.insert_one(message.toDict())
 
     def insert_user(self, user: User):
-        if not self.get_user(user.username):
+        if self.get_user(user.username):
             return {"error": "User already exists"}
-        return self.users.insert_one(dict(user))
-
-    def edit_user(self, user: User, new_password):
-        return self.users.update_one({"username": user.username}, {"$set": {"password": new_password}})
+        result = self.users.insert_one(user.toDict())
+        print(result)
 
     def get_messages(self, user: str, to: str):
         return self.messages.find({"to": to, "user": user})
@@ -58,4 +54,5 @@ class Database:
         return self.users.find()
 
     def get_user(self, username: str):
-        return self.users.find_one({"username": username})
+        result = self.users.find_one({"username": username})
+        return result
