@@ -45,7 +45,7 @@ class Database:
         if self.get_user(user.username):
             return {"error": "User already exists"}
         result = self.users.insert_one(user.toDict())
-        print(result)
+        return result
 
     def get_messages(self, user: str, to: str):
         return self.messages.find({"to": to, "user": user})

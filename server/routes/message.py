@@ -16,7 +16,19 @@ async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     while run:
         data = await websocket.receive_text()
-        await websocket.send_json({"message_json": loads(data)["message_json"]})
+        data = loads(data)
+        print(data)
+        if data.get("run"):
+            messages = db.get_messages(
+                data["message_json"]["to"],
+                data["message_json"]["user"]
+            )
+            print(messages)
+            messages = [
+                message for message in messages if message["timestamp"] > data["message_json"]["lastUpdated"]
+            ]
+            if messages:
+                await websocket.send_json({"messages": messages})
 
     await websocket.close(code=1000)
 
@@ -31,7 +43,7 @@ async def get_all_messages(req: Request, get_messages: GetMessages):
     if (
         user
         and user.get("username") == req.headers["username"]
-        and user.get("password") == req.headers["username"]
+        and user.get("password") == req.headers["password"]
     ):
         return db.get_messages(get_messages.user, get_messages.to)
     if not get_messages.user != req.headers["username"]:
@@ -44,11 +56,8 @@ async def get_all_messages(req: Request, get_messages: GetMessages):
 async def add_message(req: Request, message: AddMessage):
     if req.headers.get("username") and req.headers.get("password"):
         user = db.get_user(req.headers["username"])
-        if (
-            user            
-            and user.get("username", "") == req.headers["username"]
-            and user.get("password", "") == req.headers["password"]
-        ):
+        conditions = user and user.get("username", "") == req.headers["username"] and user.get("password", "") == req.headers["password"]
+        if (conditions):
             db.insert_message(
                 Message(
                     user=message.user,

@@ -19,15 +19,18 @@ PASSWORD={}
                 input("Username: "), input("Password: ")
             )
         )
+    load_dotenv()
 
     result = requests.post(
         "http://localhost:8000/user/add",
-        data=json.dumps({
-            "username": str(os.environ.get("USERNAME", "")),
-            "password": str(os.environ.get("USERNAME", "")),
-        }),
+        data=json.dumps(
+            {
+                "username": str(os.environ.get("USERNAME", "")),
+                "password": str(os.environ.get("PASSWORD", "")),
+            }
+        ),
     ).json()
-    if "error" in result:
+    if result and "error" in result:
         print("Error: {}".format(result["error"]))
         exit()
 
